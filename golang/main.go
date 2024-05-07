@@ -120,6 +120,37 @@ func (g *Golang) Test(
 	return g.prepare().WithExec(command).Stdout(ctx)
 }
 
+func (g *Golang) Vulncheck(
+	ctx context.Context,
+	// The Go source code to lint
+	// +optional
+	source *Directory,
+	// Workdir to run golangci-lint
+	// +optional
+	// +default "./..."
+	component string,
+) (string, error) {
+	if source != nil {
+		g = g.WithProject(source)
+	}
+	
+	ctr := g.Base
+	if _, err := ctr.WithExec([]string{"govulncheck", "--version"}).Sync(ctx); err != nil {
+		tag, err := dag.Github().GetLatestRelease("golang/vuln").Tag(ctx)
+		if err != nil {
+			return "", err
+		}
+
+		ctr = ctr.WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulncheck@" + tag})
+	}
+
+	return ctr.
+		WithMountedDirectory("/src", g.Proj).
+		WithWorkdir("/src").
+		WithExec([]string{"govulncheck", component}).
+		Stdout(ctx)
+}
+
 // Lint the Go project
 func (g *Golang) GolangciLint(
 	ctx context.Context,
