@@ -116,7 +116,7 @@ func (g *Golang) Test(
 	if source != nil {
 		g = g.WithProject(source)
 	}
-	command := append([]string{"go", "test"}, args...)
+	command := append([]string{"go", "test", "-coverprofile=coverage.txt", "-timeout", "30s", "-v"}, args...)
 	return g.prepare().WithExec(command).Stdout(ctx)
 }
 
