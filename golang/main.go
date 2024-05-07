@@ -135,7 +135,7 @@ func (g *Golang) Vulncheck(
 	}
 	g.Ctr = g.prepare().WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulncheck@latest"})
 	// return g.prepare().WithExec([]string{"ls", "-latr", component}).Stdout(ctx)
-	return g.prepare().WithExec([]string{"govulncheck", component}).Stdout(ctx)
+	return g.prepare().WithExec([]string{"govulncheck", "-C", component}).Stdout(ctx)
 }
 
 // Lint the Go project
