@@ -112,11 +112,17 @@ func (g *Golang) Test(
 	// +optional
 	// +default "./..."
 	component string,
+	// Generate a coverprofile or not at a location
+	// +optional
+	// +default ./
+	coverageLocation string,
 ) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
 	}
-	command := append([]string{"go", "test", component, "-coverprofile=coverage.txt", "-timeout", "30s", "-v"})
+
+	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", "30s", "-v"})
+
 	return g.prepare().WithExec(command).Stdout(ctx)
 }
 
