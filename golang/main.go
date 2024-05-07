@@ -128,7 +128,7 @@ func (g *Golang) GolangciLint(
 	source *Directory,
 	// +optional
 	// +default "./..."
-	workdir string
+	workdir string,
 ) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
