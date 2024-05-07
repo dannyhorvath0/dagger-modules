@@ -111,12 +111,12 @@ func (g *Golang) Test(
 	// Arguments to `go test`
 	// +optional
 	// +default "./..."
-	args []string,
+	component string,
 ) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
 	}
-	command := append([]string{"go", "test", "-coverprofile=coverage.txt", "-timeout", "30s", "-v"}, args...)
+	command := append([]string{"go", "test", component, "-coverprofile=coverage.txt", "-timeout", "30s", "-v"})
 	return g.prepare().WithExec(command).Stdout(ctx)
 }
 
