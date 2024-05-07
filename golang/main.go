@@ -134,21 +134,8 @@ func (g *Golang) Vulncheck(
 		g = g.WithProject(source)
 	}
 	
-	ctr := g.Base
-	if _, err := ctr.WithExec([]string{"govulncheck", "--version"}).Sync(ctx); err != nil {
-		tag, err := dag.Github().GetLatestRelease("golang/vuln").Tag(ctx)
-		if err != nil {
-			return "", err
-		}
-
-		ctr = ctr.WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulncheck@" + tag})
-	}
-
-	return ctr.
-		WithMountedDirectory("/src", g.Proj).
-		WithWorkdir("/src").
-		WithExec([]string{"govulncheck", component}).
-		Stdout(ctx)
+	g = g.prepare().WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulncheck@latest"})
+	return g.prepare().WithExec([]string{"govulncheck", component}).Stdout(ctx)
 }
 
 // Lint the Go project
