@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"runtime"
-
 )
 
 const (
@@ -135,8 +134,7 @@ func (g *Golang) Vulncheck(
 		g = g.WithProject(source)
 	}
 
-	ctr := g.Base("1.22.2").Container()
-	g.Ctr = ctr.prepare().WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulnchecker@latest"})
+	g.Ctr = g.prepare().WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulnchecker@latest"})
 	return g.prepare().WithExec([]string{"govulncheck", component}).Stdout(ctx)
 }
 
