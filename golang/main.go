@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"runtime"
 
-	"dagger.io/dagger/dag"
 )
 
 const (
