@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	DEFAULT_GO = "1.21"
+	DEFAULT_GO = "1.22"
 	PROJ_MOUNT = "/src"
 	LINT_IMAGE = "golangci/golangci-lint:v1.55.2"
-	OUT_DIR = "/out/"
+	OUT_DIR    = "/out/"
 )
 
 type Golang struct {
