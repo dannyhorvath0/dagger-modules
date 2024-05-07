@@ -129,7 +129,7 @@ func (g *Golang) GolangciLint(
 	// Workdir to run golangci-lint
 	// +optional
 	// +default "./..."
-	workdir string,
+	component string,
 ) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
