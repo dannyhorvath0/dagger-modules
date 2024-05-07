@@ -126,6 +126,9 @@ func (g *Golang) GolangciLint(
 	// The Go source code to lint
 	// +optional
 	source *Directory,
+	// +optional
+	// +default "./..."
+	workdir string
 ) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
@@ -133,7 +136,7 @@ func (g *Golang) GolangciLint(
 	return dag.Container().From(LINT_IMAGE).
 		WithMountedDirectory("/src", g.Proj).
 		WithWorkdir("/src").
-		WithExec([]string{"golangci-lint", "run", "-v", "--timeout", "5m"}).
+		WithExec([]string{"golangci-lint", "run", "-v", "--allow-parallel-runners", workdir, "--timeout", "5m"}).
 		Stdout(ctx)
 }
 
