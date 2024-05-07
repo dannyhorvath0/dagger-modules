@@ -8,8 +8,6 @@ import (
 	"context"
 	"fmt"
 	"runtime"
-
-	"dagger.io/dagger/dag"
 )
 
 const (
