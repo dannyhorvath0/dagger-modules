@@ -137,7 +137,7 @@ func (g *Golang) GolangciLint(
 	return dag.Container().From(LINT_IMAGE).
 		WithMountedDirectory("/src", g.Proj).
 		WithWorkdir("/src").
-		WithExec([]string{"golangci-lint", "run", "-v", "--allow-parallel-runners", workdir, "--timeout", "5m"}).
+		WithExec([]string{"golangci-lint", "run", "-v", "--allow-parallel-runners", component, "--timeout", "5m"}).
 		Stdout(ctx)
 }
 
