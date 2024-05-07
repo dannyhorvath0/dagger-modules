@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+
+	"dagger.io/dagger/dag"
 )
 
 const (
@@ -133,8 +135,9 @@ func (g *Golang) Vulncheck(
 	if source != nil {
 		g = g.WithProject(source)
 	}
-	
-	ctr := g.prepare().WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulncheck@latest"})
+
+	ctr := g.Base("1.22.2").Container()
+	ctr = ctr.WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulnchecker@latest"})
 	return ctr.prepare().WithExec([]string{"govulncheck", component}).Stdout(ctx)
 }
 
