@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+
+	"dagger.io/dagger/dag"
 )
 
 const (
@@ -126,6 +128,7 @@ func (g *Golang) GolangciLint(
 	// The Go source code to lint
 	// +optional
 	source *Directory,
+	// Workdir to run golangci-lint
 	// +optional
 	// +default "./..."
 	workdir string,
