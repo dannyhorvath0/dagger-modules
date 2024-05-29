@@ -118,12 +118,60 @@ func (g *Golang) Test(
 	coverageLocation string,
 ) (string, error) {
 	if source != nil {
-		g = g.WithProject(source)
+		g = g.WithProject(source).A
 	}
 
 	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", "30s", "-v"})
 
 	return g.prepare().WithExec(command).Stdout(ctx)
+}
+
+func (g *Golang) Attach(
+	ctx context.Context,
+	container *Container,
+	// +optional
+	// +default="24.0"
+	dockerVersion string,
+) (*Container, error) {
+	dockerd := g.Service(dockerVersion)
+
+	dockerHost, err := dockerd.Endpoint(ctx, ServiceEndpointOpts{
+		Scheme: "tcp",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return container.
+		WithServiceBinding("docker", dockerd).
+		WithEnvVariable("DOCKER_HOST", dockerHost), nil
+}
+
+// Get a Service container running dockerd
+func (g *Golang) Service(
+	// +optional
+	// +default="24.0"
+	dockerVersion string,
+) *Service {
+	port := 2375
+	return dag.Container().
+		From(fmt.Sprintf("docker:%s-dind", dockerVersion)).
+		WithMountedCache(
+			"/var/lib/docker",
+			dag.CacheVolume(dockerVersion+"-docker-lib"),
+			ContainerWithMountedCacheOpts{
+				Sharing: Private,
+			}).
+		WithExposedPort(port).
+		WithExec([]string{
+			"dockerd",
+			"--host=tcp://0.0.0.0:2375",
+			"--host=unix:///var/run/docker.sock",
+			"--tls=false",
+		}, ContainerWithExecOpts{
+			InsecureRootCapabilities: true,
+		}).
+		AsService()
 }
 
 func (g *Golang) Vulncheck(
@@ -231,6 +279,6 @@ func (g *Golang) BuildRemote(
 func (g *Golang) prepare() *Container {
 	c := g.Ctr.
 		WithDirectory(PROJ_MOUNT, g.Proj).
-		WithWorkdir(PROJ_MOUNT)
+		WithWorkdir(PROJ_MOUNT).
 	return c
 }
