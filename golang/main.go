@@ -7,9 +7,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"runtime"
-
-	"dagger.io/dagger/dag"
 )
 
 const (
@@ -120,12 +119,12 @@ func (g *Golang) Test(
 	coverageLocation string,
 ) (string, error) {
 	if source != nil {
-		g = g.WithProject(source).Attach()
+		g = g.WithProject(source)
 	}
 
 	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", "30s", "-v"})
 
-	return g.prepare().WithExec(command).Stdout(ctx)
+	return g.prepare(ctx).WithExec(command).Stdout(ctx)
 }
 
 func (g *Golang) Attach(
@@ -278,9 +277,14 @@ func (g *Golang) BuildRemote(
 }
 
 // Private func to check readiness and prepare the container for build/test/lint
-func (g *Golang) prepare() *Container {
+func (g *Golang) prepare(ctx context.Context) *Container {
 	c := g.Ctr.
 		WithDirectory(PROJ_MOUNT, g.Proj).
-		WithWorkdir(PROJ_MOUNT).
+		WithWorkdir(PROJ_MOUNT)
+
+	c, err := g.Attach(ctx, c)
+	if err != nil {
+		log.Printf(err.Error())
+	}
 	return c
 }
