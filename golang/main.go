@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"log"
 	"runtime"
+
+	"dagger.io/dagger/dag"
 )
 
 const (
@@ -166,9 +168,10 @@ func (g *Golang) Service(
 		WithExec([]string{
 			"dockerd",
 			"--host=tcp://0.0.0.0:2375",
-			"--host=tcp://0.0.0.0:61504",
 			"--host=unix:///var/run/docker.sock",
 			"--tls=false",
+			"--log-driver=syslog",
+			"--log-opt=syslog-address=tcp://localhost::61504",
 		}, ContainerWithExecOpts{
 			InsecureRootCapabilities: true,
 		}).
