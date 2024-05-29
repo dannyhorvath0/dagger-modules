@@ -169,7 +169,6 @@ func (g *Golang) Service(
 			"--host=unix:///var/run/docker.sock",
 			"--tls=false",
 			"--log-driver=syslog",
-			"--log-opt=syslog-address=tcp://localhost::61504",
 		}, ContainerWithExecOpts{
 			InsecureRootCapabilities: true,
 		}).
