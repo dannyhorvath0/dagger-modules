@@ -46,6 +46,7 @@ func New(
 
 // Build the Go project
 func (g *Golang) Build(
+	ctx context.Context,
 	// The Go source code to build
 	// +optional
 	source *Directory,
@@ -70,7 +71,7 @@ func (g *Golang) Build(
 	}
 
 	command := append([]string{"go", "build", "-o", OUT_DIR}, args...)
-	return g.prepare().
+	return g.prepare(ctx).
 		WithEnvVariable("GOARCH", arch).
 		WithEnvVariable("GOOS", os).
 		WithExec(command).
@@ -188,9 +189,9 @@ func (g *Golang) Vulncheck(
 	if source != nil {
 		g = g.WithProject(source)
 	}
-	g.Ctr = g.prepare().WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulncheck@latest"})
+	g.Ctr = g.prepare(ctx).WithExec([]string{"go", "install", "golang.org/x/vuln/cmd/govulncheck@latest"})
 	// return g.prepare().WithExec([]string{"ls", "-latr", component}).Stdout(ctx)
-	return g.prepare().WithExec([]string{"govulncheck", "-C", component}).Stdout(ctx)
+	return g.prepare(ctx).WithExec([]string{"govulncheck", "-C", component}).Stdout(ctx)
 }
 
 // Lint the Go project
@@ -251,6 +252,7 @@ func (g *Golang) WithContainer(ctr *Container) *Golang {
 
 // Build a remote git repo
 func (g *Golang) BuildRemote(
+	ctx context.Context,
 	remote, ref, module string,
 	// +optional
 	arch string,
@@ -269,7 +271,7 @@ func (g *Golang) BuildRemote(
 		platform = runtime.GOOS
 	}
 	command := append([]string{"go", "build", "-o", "build/"}, module)
-	return g.prepare().
+	return g.prepare(ctx).
 		WithEnvVariable("GOARCH", arch).
 		WithEnvVariable("GOOS", platform).
 		WithExec(command).
