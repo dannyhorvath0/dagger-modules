@@ -80,6 +80,7 @@ func (g *Golang) Build(
 
 // Build a Go project returning a Container containing the build
 func (g *Golang) BuildContainer(
+	ctx context.Context,
 	// The Go source code to build
 	// +optional
 	source *Directory,
@@ -96,7 +97,7 @@ func (g *Golang) BuildContainer(
 	// +optional
 	base *Container,
 ) *Container {
-	dir := g.Build(source, args, arch, os)
+	dir := g.Build(ctx, source, args, arch, os)
 	if base == nil {
 		base = dag.Container().From("ubuntu:latest")
 	}
@@ -131,11 +132,8 @@ func (g *Golang) Test(
 func (g *Golang) Attach(
 	ctx context.Context,
 	container *Container,
-	// +optional
-	// +default="24.0"
-	dockerVersion string,
 ) (*Container, error) {
-	dockerd := g.Service(dockerVersion)
+	dockerd := g.Service("24.0")
 
 	dockerHost, err := dockerd.Endpoint(ctx, ServiceEndpointOpts{
 		Scheme: "tcp",
