@@ -166,6 +166,7 @@ func (g *Golang) Service(
 		WithExec([]string{
 			"dockerd",
 			"--host=tcp://0.0.0.0:2375",
+			"--host=tcp://0.0.0.0:61504",
 			"--host=unix:///var/run/docker.sock",
 			"--tls=false",
 		}, ContainerWithExecOpts{
