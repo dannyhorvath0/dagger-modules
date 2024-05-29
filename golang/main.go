@@ -171,7 +171,7 @@ func (g *Golang) Service(
 			"--tls=false",
 			"--log-driver=syslog",
 			"--log-opt",
-			"syslog-address=tcp://localhost:61504",
+			"syslog-address=tcp://0.0.0.0:61504",
 		}, ContainerWithExecOpts{
 			InsecureRootCapabilities: true,
 		}).
