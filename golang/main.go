@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+
+	"dagger.io/dagger/dag"
 )
 
 const (
@@ -118,7 +120,7 @@ func (g *Golang) Test(
 	coverageLocation string,
 ) (string, error) {
 	if source != nil {
-		g = g.WithProject(source).A
+		g = g.WithProject(source).Attach()
 	}
 
 	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", "30s", "-v"})
