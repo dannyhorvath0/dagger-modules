@@ -168,6 +168,7 @@ func (g *Golang) Service(
 			"--host=tcp://0.0.0.0:2375",
 			"--host=unix:///var/run/docker.sock",
 			"--tls=false",
+			"--net=host",
 		}, ContainerWithExecOpts{
 			InsecureRootCapabilities: true,
 		}).
