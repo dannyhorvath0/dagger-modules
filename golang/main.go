@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"log"
 	"runtime"
+
+	"dagger.io/dagger/dag"
 )
 
 const (
@@ -124,7 +126,7 @@ func (g *Golang) Test(
 		g = g.WithProject(source)
 	}
 
-	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", "30s", "-v"})
+	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", "60s", "-v"})
 
 	return g.prepare(ctx).WithExec(command).Stdout(ctx)
 }
