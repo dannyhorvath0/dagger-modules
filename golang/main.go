@@ -119,16 +119,16 @@ func (g *Golang) Test(
 	// +optional
 	// +default ./
 	coverageLocation string,
-	// Timeout for go test
+	// Timeout for go
 	// +optional
 	// +default "180s"
-	testTimeout string,
+	timeout string,
 ) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
 	}
 
-	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", testTimeout, "-v"})
+	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", timeout, "-v"})
 
 	return g.prepare(ctx).WithExec(command).Stdout(ctx)
 }
@@ -209,7 +209,7 @@ func (g *Golang) GolangciLint(
 	// Timeout for golangci-lint
 	// +optional
 	// +default "5m"
-	lintTimeout string,
+	timeout string,
 ) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
@@ -217,7 +217,7 @@ func (g *Golang) GolangciLint(
 	return dag.Container().From(LINT_IMAGE).
 		WithMountedDirectory("/src", g.Proj).
 		WithWorkdir("/src").
-		WithExec([]string{"golangci-lint", "run", "-v", "--allow-parallel-runners", component, "--timeout", lintTimeout}).
+		WithExec([]string{"golangci-lint", "run", "-v", "--allow-parallel-runners", component, "--timeout", timeout}).
 		Stdout(ctx)
 }
 
