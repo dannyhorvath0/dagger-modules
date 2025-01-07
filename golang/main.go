@@ -119,6 +119,7 @@ func (g *Golang) Test(
 	// +optional
 	// +default ./
 	coverageLocation string,
+	// Timeout for go test
 	// +optional
 	// +default "180s"
 	timeout string,
@@ -205,6 +206,7 @@ func (g *Golang) GolangciLint(
 	// +optional
 	// +default "./..."
 	component string,
+	// Timeout for golangci-lint
 	// +optional
 	// +default "5m"
 	timeout string,
