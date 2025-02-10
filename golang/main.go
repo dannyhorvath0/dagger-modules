@@ -123,12 +123,16 @@ func (g *Golang) Test(
 	// +optional
 	// +default "180s"
 	timeout string,
+	// Mod for go
+	// +optional
+	// +default "mod"
+	mod string,
 ) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
 	}
 
-	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", timeout, "-v"})
+	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", timeout, "-mod", mod, "-v"})
 
 	return g.prepare(ctx).WithExec(command).Stdout(ctx)
 }
