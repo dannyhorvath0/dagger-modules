@@ -225,14 +225,14 @@ func (g *Golang) GolangciLint(
 func (g *Golang) Base(version string) *Golang {
 	mod := dag.CacheVolume("gomodcache")
 	build := dag.CacheVolume("gobuildcache")
-	vendor := dag.CacheVolume("govendorcache")
 
 	image := fmt.Sprintf("golang:%s", version)
 	c := dag.Container().
 		From(image).
 		WithMountedCache("/go/pkg/mod", mod).
 		WithMountedCache("/root/.cache/go-build", build).
-		WithMountedDirectory("/src/vendor", g.Proj.Directory("vendor"))
+		WithMountedDirectory("/src/vendor", g.Proj.Directory("vendor")).
+		WithEnvVariable("GOFLAGS", "-mod=vendor")
 	g.Ctr = c
 	return g
 }
