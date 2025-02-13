@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	DEFAULT_GO = "1.23.4"
+	DEFAULT_GO = "golang:1.23.4"
 	PROJ_MOUNT = "/src"
 	LINT_IMAGE = "golangci/golangci-lint:latest"
 	OUT_DIR    = "/out/"
@@ -33,7 +33,7 @@ func New(
 
 	// Standaard container gebruiken als ctr nil is
 	if ctr == nil {
-		g.Ctr = dag.Container().From("golang:", DEFAULT_GO).
+		g.Ctr = dag.Container().From(DEFAULT_GO).
 			WithMountedCache("/go/pkg/mod", dag.CacheVolume("gomodcache")).
 			WithMountedCache("/root/.cache/go-build", dag.CacheVolume("gobuildcache"))
 	} else {
@@ -230,7 +230,7 @@ func (g *Golang) GolangciLint(
 
 // Sets up the Container with a golang image and cache volumes
 func (g *Golang) Base() *Golang {
-	g.Ctr = dag.Container().From("golang:", DEFAULT_GO).
+	g.Ctr = dag.Container().From(DEFAULT_GO).
 		WithMountedCache("/go/pkg/mod", dag.CacheVolume("gomodcache")).
 		WithMountedCache("/root/.cache/go-build", dag.CacheVolume("gobuildcache")).
 		WithMountedDirectory("/src/vendor", g.Proj.Directory("vendor")).
