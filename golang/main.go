@@ -37,7 +37,7 @@ func New(ctr *Container, proj *Directory) *Golang {
 		g.Proj = proj
 	} else {
 		log.Println("⚠️ Warning: proj is nil in New(). Defaulting to /src.")
-		g.Proj = dag.Directory(PROJ_MOUNT)
+		g.Proj = ctr.Directory(PROJ_MOUNT)
 	}
 
 	return g
@@ -201,17 +201,20 @@ func (g *Golang) Base(version string) *Golang {
 	mod := dag.CacheVolume("gomodcache")
 	build := dag.CacheVolume("gobuildcache")
 
-	if g.Proj == nil {
-		log.Println("⚠️ Warning: g.Proj is nil in Base(). Defaulting to /src.")
-		g.Proj = dag.Directory(PROJ_MOUNT)
-	}
-
 	image := fmt.Sprintf("golang:%s", version)
 	c := dag.Container().
 		From(image).
 		WithMountedCache("/go/pkg/mod", mod).
 		WithMountedCache("/root/.cache/go-build", build).
 		WithMountedDirectory("/src/vendor", g.Proj.Directory("vendor")). // Hier was de crash
+		WithEnvVariable("GOFLAGS", "-mod=vendor")
+
+	if g.Proj == nil {
+		log.Println("⚠️ Warning: g.Proj is nil in Base(). Defaulting to /src.")
+		g.Proj = c.Directory(PROJ_MOUNT)
+	}
+
+	c = c.WithMountedDirectory("/src/vendor", g.Proj.Directory("vendor")).
 		WithEnvVariable("GOFLAGS", "-mod=vendor")
 
 	g.Ctr = c
