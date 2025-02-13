@@ -26,7 +26,12 @@ type Golang struct {
 }
 
 func New(
+	// +optional
+	// +default="golang:1.23.4"
 	ctr *Container,
+
+	// +optional
+	// +default="."
 	proj *Directory,
 ) *Golang {
 	g := &Golang{}
