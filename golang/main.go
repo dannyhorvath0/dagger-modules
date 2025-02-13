@@ -26,18 +26,25 @@ type Golang struct {
 }
 
 func New(
-	// +optional
 	ctr *Container,
-	// +optional
 	proj *Directory,
 ) *Golang {
 	g := &Golang{}
-	if ctr == nil {
-		ctr = g.Base(DEFAULT_GO).Ctr
-	}
-	g.Ctr = ctr
 
-	if proj != nil {
+	// Standaard container gebruiken als ctr nil is
+	if ctr == nil {
+		g.Ctr = dag.Container().From("golang:", DEFAULT_GO).
+			WithMountedCache("/go/pkg/mod", dag.CacheVolume("gomodcache")).
+			WithMountedCache("/root/.cache/go-build", dag.CacheVolume("gobuildcache"))
+	} else {
+		g.Ctr = ctr
+	}
+
+	// Standaard projectdirectory gebruiken als proj nil is
+	if proj == nil {
+		log.Println("⚠️ Warning: proj is nil. Defaulting to current directory.")
+		g.Proj = g.Ctr.Directory(".")
+	} else {
 		g.Proj = proj
 	}
 
@@ -222,15 +229,13 @@ func (g *Golang) GolangciLint(
 }
 
 // Sets up the Container with a golang image and cache volumes
-func (g *Golang) Base(version string) *Golang {
-	mod := dag.CacheVolume("gomodcache")
-	build := dag.CacheVolume("gobuildcache")
-	image := fmt.Sprintf("golang:%s", version)
-	c := dag.Container().
-		From(image).
-		WithMountedCache("/go/pkg/mod", mod).
-		WithMountedCache("/root/.cache/go-build", build)
-	g.Ctr = c
+func (g *Golang) Base() *Golang {
+	g.Ctr = dag.Container().From("golang:", DEFAULT_GO).
+		WithMountedCache("/go/pkg/mod", dag.CacheVolume("gomodcache")).
+		WithMountedCache("/root/.cache/go-build", dag.CacheVolume("gobuildcache")).
+		WithMountedDirectory("/src/vendor", g.Proj.Directory("vendor")).
+		WithEnvVariable("GOFLAGS", "-mod=vendor")
+
 	return g
 }
 
