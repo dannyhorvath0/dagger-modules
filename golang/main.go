@@ -25,9 +25,13 @@ type Golang struct {
 	Proj *Directory
 }
 
-func New(ctr *Container, proj *Directory) *Golang {
+func New(
+	// +optional
+	ctr *Container,
+	// +optional
+	proj *Directory,
+) *Golang {
 	g := &Golang{}
-
 	if ctr == nil {
 		ctr = g.Base(DEFAULT_GO).Ctr
 	}
@@ -35,9 +39,6 @@ func New(ctr *Container, proj *Directory) *Golang {
 
 	if proj != nil {
 		g.Proj = proj
-	} else {
-		log.Println("⚠️ Warning: proj is nil in New(). Defaulting to /src.")
-		g.Proj = ctr.Directory(PROJ_MOUNT)
 	}
 
 	return g
@@ -104,15 +105,30 @@ func (g *Golang) BuildContainer(
 		WithDirectory("/usr/local/bin/", dir)
 }
 
-func (g *Golang) Test(ctx context.Context, source *Directory, component string, coverageLocation string, timeout string) (string, error) {
+// Test the Go project
+func (g *Golang) Test(
+	ctx context.Context,
+	// The Go source code to test
+	// +optional
+	source *Directory,
+	// Arguments to `go test`
+	// +optional
+	// +default "./..."
+	component string,
+	// Generate a coverprofile or not at a location
+	// +optional
+	// +default ./
+	coverageLocation string,
+	// Timeout for go
+	// +optional
+	// +default "180s"
+	timeout string,
+) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
-	} else {
-		log.Println("⚠️ Warning: source is nil in Test. Using default project.")
-		g = g.WithProject(g.Ctr.Directory(PROJ_MOUNT))
 	}
 
-	command := []string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", timeout, "-v"}
+	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", timeout, "-v"})
 
 	return g.prepare(ctx).WithExec(command).Stdout(ctx)
 }
@@ -181,18 +197,27 @@ func (g *Golang) Vulncheck(
 }
 
 // Lint the Go project
-func (g *Golang) GolangciLint(ctx context.Context, source *Directory, component string, timeout string) (string, error) {
+func (g *Golang) GolangciLint(
+	ctx context.Context,
+	// The Go source code to lint
+	// +optional
+	source *Directory,
+	// Workdir to run golangci-lint
+	// +optional
+	// +default "./..."
+	component string,
+	// Timeout for golangci-lint
+	// +optional
+	// +default "5m"
+	timeout string,
+) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
-	} else {
-		log.Println("⚠️ Warning: source is nil in GolangciLint. Using default project.")
-		g = g.WithProject(g.Ctr.Directory(PROJ_MOUNT))
 	}
-
 	return dag.Container().From(LINT_IMAGE).
-		WithMountedDirectory(PROJ_MOUNT, g.Proj).
-		WithWorkdir(PROJ_MOUNT + "/" + component).
-		WithExec([]string{"golangci-lint", "run", "-v", "--timeout", timeout}).
+		WithMountedDirectory("/src", g.Proj).
+		WithWorkdir("/src").
+		WithExec([]string{"golangci-lint", "run", "-v", "--allow-parallel-runners", component, "--timeout", timeout}).
 		Stdout(ctx)
 }
 
@@ -200,23 +225,11 @@ func (g *Golang) GolangciLint(ctx context.Context, source *Directory, component 
 func (g *Golang) Base(version string) *Golang {
 	mod := dag.CacheVolume("gomodcache")
 	build := dag.CacheVolume("gobuildcache")
-
 	image := fmt.Sprintf("golang:%s", version)
 	c := dag.Container().
 		From(image).
 		WithMountedCache("/go/pkg/mod", mod).
-		WithMountedCache("/root/.cache/go-build", build).
-		WithMountedDirectory("/src/vendor", g.Proj.Directory("vendor")). // Hier was de crash
-		WithEnvVariable("GOFLAGS", "-mod=vendor")
-
-	if g.Proj == nil {
-		log.Println("⚠️ Warning: g.Proj is nil in Base(). Defaulting to /src.")
-		g.Proj = c.Directory(PROJ_MOUNT)
-	}
-
-	c = c.WithMountedDirectory("/src/vendor", g.Proj.Directory("vendor")).
-		WithEnvVariable("GOFLAGS", "-mod=vendor")
-
+		WithMountedCache("/root/.cache/go-build", build)
 	g.Ctr = c
 	return g
 }
