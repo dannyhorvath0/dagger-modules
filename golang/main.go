@@ -137,9 +137,9 @@ func (g *Golang) Testdebug(
 
 	command := append([]string{"go", "test", "./cmd/controller/...", "-cover", "-coverprofile", "/tmp/coverage.txt", "-timeout", timeout, "-v"})
 
-	result, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
+	_, err = g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
-		return "", fmt.Errorf("go test error: %v\nstderr: %s", err, result)
+		return "", err
 	}
 
 	coverageData, err := os.ReadFile("/tmp/coverage.txt")
