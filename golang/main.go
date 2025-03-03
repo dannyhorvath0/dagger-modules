@@ -129,7 +129,7 @@ func (g *Golang) Test(
 		g = g.WithProject(source)
 	}
 
-	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", timeout, "-v"})
+	command := append([]string{"go", "test", component, "-coverprofile", "./coverage.txt", "-timeout", timeout, "-v"})
 
 	// Voer de test uit
 	_, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
@@ -138,7 +138,7 @@ func (g *Golang) Test(
 	}
 
 	// Lees het coverageprofiel in
-	coverageData, err := os.ReadFile(coverageLocation)
+	coverageData, err := os.ReadFile("./coverage.txt")
 	if err != nil {
 		return "", err
 	}
