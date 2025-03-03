@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"runtime"
 )
 
@@ -103,6 +104,49 @@ func (g *Golang) BuildContainer(
 	}
 	return base.
 		WithDirectory("/usr/local/bin/", dir)
+}
+
+// Test the Go project
+func (g *Golang) TestDebug(
+	ctx context.Context,
+	// The Go source code to test
+	// +optional
+	source *Directory,
+	// Arguments to `go test`
+	// +optional
+	// +default "./..."
+	component string,
+	// Generate a coverprofile or not at a location
+	// +optional
+	// +default ./
+	coverageLocation string,
+	// Timeout for go
+	// +optional
+	// +default "180s"
+	timeout string,
+) (string, error) {
+	if source != nil {
+		g = g.WithProject(source)
+	}
+
+	command := append([]string{"go", "test", component, "-cover", "-coverprofile", "/tmp/coverage.txt", "-timeout", timeout, "-v"})
+
+	// Voer de test uit
+	_, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	// Lees het coverageprofiel in
+	coverageData, err := os.ReadFile("/tmp/coverage.txt")
+	if err != nil {
+		return "", err
+	}
+
+	dir, _ := os.Getwd()
+	fmt.Println("Current working directory:", dir)
+
+	return string(coverageData), nil
 }
 
 // Test the Go project
