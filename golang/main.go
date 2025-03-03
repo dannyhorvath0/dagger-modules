@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"runtime"
 )
 
@@ -130,7 +131,18 @@ func (g *Golang) Test(
 
 	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", timeout, "-v"})
 
-	return g.prepare(ctx).WithExec(command).Stdout(ctx)
+	// Voer de test uit
+	_, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	// Lees het coverageprofiel in
+	coverageData, err := os.ReadFile(coverageLocation)
+	if err != nil {
+		return "", err
+	}
+	return string(coverageData), nil
 }
 
 func (g *Golang) Attach(
