@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"runtime"
 )
 
@@ -129,24 +128,9 @@ func (g *Golang) Test(
 		g = g.WithProject(source)
 	}
 
-	command := append([]string{"go", "test", component, "-cover", "-coverprofile", "/tmp/coverage.txt", "-timeout", timeout, "-v"})
+	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", timeout, "-v"})
 
-	// Voer de test uit
-	_, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	// Lees het coverageprofiel in
-	coverageData, err := os.ReadFile("/tmp/coverage.txt")
-	if err != nil {
-		return "", err
-	}
-
-	dir, _ := os.Getwd()
-	fmt.Println("Current working directory:", dir)
-
-	return string(coverageData), nil
+	return g.prepare(ctx).WithExec(command).Stdout(ctx)
 }
 
 func (g *Golang) Attach(
