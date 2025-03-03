@@ -127,7 +127,7 @@ func (g *Golang) Testdebug(
 	if source != nil {
 		g = g.WithProject(source)
 	}
-	coverageFile := "./coverage.out"
+
 	command := append([]string{"go", "test", component, "-coverprofile", "/dev/stdout", "-covermode", "set", -timeout, timeout, "-v"})
 
 	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
