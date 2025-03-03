@@ -138,7 +138,7 @@ func (g *Golang) Test(
 	}
 
 	// Lees het coverageprofiel in
-	coverageData, err := os.ReadFile("./coverage.txt")
+	coverageData, err := os.ReadFile("/tmp/coverage.txt")
 	if err != nil {
 		return "", err
 	}
