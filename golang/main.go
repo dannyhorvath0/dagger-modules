@@ -129,11 +129,17 @@ func (g *Golang) Testdebug(
 		g = g.WithProject(source)
 	}
 
+	file, err := os.Create("/tmp/coverage.txt")
+	if err != nil {
+		return "", fmt.Errorf("kon /tmp/coverage.txt niet aanmaken: %v", err)
+	}
+	file.Close()
+
 	command := append([]string{"go", "test", "./cmd/controller/...", "-cover", "-coverprofile", "/tmp/coverage.txt", "-timeout", timeout, "-v"})
 
-	_, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
+	result, err := g.prepare(ctx).WithExec(command).Stdout(ctx).Stderr(ctx)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("go test error: %v\nstderr: %s", err, result)
 	}
 
 	coverageData, err := os.ReadFile("/tmp/coverage.txt")
