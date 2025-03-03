@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"runtime"
 )
 
@@ -129,28 +128,13 @@ func (g *Golang) Testdebug(
 		g = g.WithProject(source)
 	}
 
-	file, err := os.Create("/tmp/coverage.txt")
+	command := append([]string{"go", "test", component, "-cover", "-timeout", timeout, "-v"})
+
+	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
-		return "", fmt.Errorf("kon /tmp/coverage.txt niet aanmaken: %v", err)
+		return "", fmt.Errorf("go test error: %v\nstdout: %s", err, output)
 	}
-	file.Close()
-
-	command := append([]string{"go", "test", "./cmd/controller/...", "-cover", "-coverprofile", "/tmp/coverage.txt", "-timeout", timeout, "-v"})
-
-	_, err = g.prepare(ctx).WithExec(command).Stdout(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	coverageData, err := os.ReadFile("/tmp/coverage.txt")
-	if err != nil {
-		return "", err
-	}
-
-	dir, _ := os.Getwd()
-	fmt.Println("Current working directory:", dir)
-
-	return string(coverageData), nil
+	return output, nil
 }
 
 // Test the Go project
