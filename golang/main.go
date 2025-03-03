@@ -107,7 +107,7 @@ func (g *Golang) BuildContainer(
 }
 
 // Test the Go project
-func (g *Golang) TestDebug(
+func (g *Golang) Testdebug(
 	ctx context.Context,
 	// The Go source code to test
 	// +optional
@@ -131,13 +131,11 @@ func (g *Golang) TestDebug(
 
 	command := append([]string{"go", "test", component, "-cover", "-coverprofile", "/tmp/coverage.txt", "-timeout", timeout, "-v"})
 
-	// Voer de test uit
 	_, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	// Lees het coverageprofiel in
 	coverageData, err := os.ReadFile("/tmp/coverage.txt")
 	if err != nil {
 		return "", err
