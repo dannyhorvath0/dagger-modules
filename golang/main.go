@@ -129,7 +129,7 @@ func (g *Golang) Testdebug(
 		g = g.WithProject(source)
 	}
 
-	command := append([]string{"go", "test", component, "-cover", "-coverprofile", "/tmp/coverage.txt", "-timeout", timeout, "-v"})
+	command := append([]string{"go", "test", "./cmd/controller/...", "-cover", "-coverprofile", "/tmp/coverage.txt", "-timeout", timeout, "-v"})
 
 	_, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
