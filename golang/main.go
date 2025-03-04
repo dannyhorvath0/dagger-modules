@@ -95,6 +95,9 @@ func (g *Golang) Testdebug(
 		return "", fmt.Errorf("Failed to create directory /src: %v", err)
 	}
 
+	workdir, _ := g.Ctr.WithExec([]string{"pwd"}).Stdout(ctx)
+	fmt.Printf("Current workdir: %s\n", workdir)
+
 	// Voer de tests uit met een relatief pad
 	command := append([]string{"go", "test", component, "-coverprofile=/src/coverage.txt", "-timeout", timeout, "-v"})
 	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
