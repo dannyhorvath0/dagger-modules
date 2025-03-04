@@ -92,14 +92,13 @@ func (g *Golang) Testdebug(
 	workdir, _ := g.Ctr.WithExec([]string{"pwd"}).Stdout(ctx)
 	fmt.Printf("Current workdir: %s\n", workdir)
 
-	// Voer de tests uit met een relatief pad
 	command := append([]string{"go", "test", component, "-coverprofile=./coverage.txt", "-timeout", timeout, "-v"})
 	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
 		return "", fmt.Errorf("go test error: %v\nstdout: %s", err, output)
 	}
 
-	if _, err := g.Ctr.WithExec([]string{"ls", "-la", "./"}).Stdout(ctx); err != nil {
+	if _, err := g.Ctr.WithExec([]string{"ls", "-la", "./coverage.txt"}).Stdout(ctx); err != nil {
 		return "", fmt.Errorf("Coverage file not found or not created at: /src")
 	}
 
