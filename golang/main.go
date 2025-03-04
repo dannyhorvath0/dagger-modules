@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"runtime"
 )
 
@@ -84,25 +83,28 @@ func (g *Golang) Testdebug(
 	ctx context.Context,
 	source *Directory,
 	component string,
-	coverageLocation string,
 	timeout string,
 ) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
 	}
 
-	// Zorg dat het bestand wordt aangemaakt in de container
-	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", timeout, "-v"})
+	// Zorg dat het pad voor coverage.txt bestaat
+	_, err := g.Ctr.WithExec([]string{"mkdir", "-p", "/src"}).Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("Failed to create directory /src: %v", err)
+	}
 
-	// Voer de test uit en capture stdout
+	// Voer de tests uit met een relatief pad
+	command := append([]string{"go", "test", component, "-coverprofile=coverage.txt", "-timeout", timeout, "-v"})
 	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
 		return "", fmt.Errorf("go test error: %v\nstdout: %s", err, output)
 	}
 
-	// Controleer of coverage.txt bestaat
-	if _, err := os.Stat(coverageLocation); os.IsNotExist(err) {
-		return "", fmt.Errorf("Coverage file not found: %v", coverageLocation)
+	// Controleer of coverage.txt is aangemaakt
+	if _, err := g.Ctr.WithExec([]string{"ls", "-la", "/src/coverage.txt"}).Stdout(ctx); err != nil {
+		return "", fmt.Errorf("Coverage file not found or not created at: /src/coverage.txt")
 	}
 
 	return output, nil
