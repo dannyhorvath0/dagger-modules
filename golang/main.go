@@ -107,7 +107,7 @@ func (g *Golang) Testdebug(
 
 	// Kopieer coverage.txt naar de host
 	hostPath := "./coverage.txt"
-	if err := g.Ctr.File(coveragePath).Export(ctx, hostPath); err != nil {
+	if _, err := g.Ctr.File(coveragePath).Export(ctx, hostPath); err != nil {
 		return "", fmt.Errorf("Failed to export coverage.txt to host: %v", err)
 	}
 
