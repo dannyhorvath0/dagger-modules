@@ -106,6 +106,37 @@ func (g *Golang) BuildContainer(
 }
 
 // Test the Go project
+func (g *Golang) Coveragedebug(
+	ctx context.Context,
+	// The Go source code to test
+	// +optional
+	source *Directory,
+	// Arguments to `go test`
+	// +optional
+	// +default "./..."
+	component string,
+	// Generate a coverprofile or not at a location
+	// +optional
+	// +default ./
+	coverageLocation string,
+	// Timeout for go
+	// +optional
+	// +default "180s"
+	timeout string,
+) (string, error) {
+	if source != nil {
+		g = g.WithProject(source)
+	}
+
+	command := append([]string{"go", "test", component, "-coverprofile", "/dev/stdout", "-run", "^$", "-covermode", "set", "-json", "-timeout", timeout, "-v"})
+
+	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
+	if err != nil {
+		return "", fmt.Errorf("go test error: %v\nstdout: %s", err, output)
+	}
+	return output, nil
+}
+
 func (g *Golang) Testdebug(
 	ctx context.Context,
 	// The Go source code to test
@@ -128,7 +159,7 @@ func (g *Golang) Testdebug(
 		g = g.WithProject(source)
 	}
 
-	command := append([]string{"go", "test", component, "-coverprofile", "/dev/stdout", "-covermode", "set", "-json", "-timeout", timeout, "-v"})
+	command := append([]string{"go", "test", component, "-timeout", timeout, "-v"})
 
 	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
