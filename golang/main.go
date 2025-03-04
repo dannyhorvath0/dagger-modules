@@ -89,24 +89,17 @@ func (g *Golang) Testdebug(
 		g = g.WithProject(source)
 	}
 
-	// Zorg dat het pad voor coverage.txt bestaat
-	_, err := g.Ctr.WithExec([]string{"mkdir", "-p", "/src"}).Stdout(ctx)
-	if err != nil {
-		return "", fmt.Errorf("Failed to create directory /src: %v", err)
-	}
-
 	workdir, _ := g.Ctr.WithExec([]string{"pwd"}).Stdout(ctx)
 	fmt.Printf("Current workdir: %s\n", workdir)
 
 	// Voer de tests uit met een relatief pad
-	command := append([]string{"go", "test", component, "-coverprofile=/src/coverage.txt", "-timeout", timeout, "-v"})
+	command := append([]string{"go", "test", component, "-coverprofile=./coverage.txt", "-timeout", timeout, "-v"})
 	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
 		return "", fmt.Errorf("go test error: %v\nstdout: %s", err, output)
 	}
 
-	// Controleer of coverage.txt is aangemaakt
-	if _, err := g.Ctr.WithExec([]string{"ls", "-la", "/src"}).Stdout(ctx); err != nil {
+	if _, err := g.Ctr.WithExec([]string{"ls", "-la", "./"}).Stdout(ctx); err != nil {
 		return "", fmt.Errorf("Coverage file not found or not created at: /src")
 	}
 
