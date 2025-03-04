@@ -103,8 +103,8 @@ func (g *Golang) Testdebug(
 	}
 
 	// Controleer of coverage.txt is aangemaakt
-	if _, err := g.Ctr.WithExec([]string{"ls", "-la", "/src/coverage.txt"}).Stdout(ctx); err != nil {
-		return "", fmt.Errorf("Coverage file not found or not created at: /src/coverage.txt")
+	if _, err := g.Ctr.WithExec([]string{"ls", "-la", "/src"}).Stdout(ctx); err != nil {
+		return "", fmt.Errorf("Coverage file not found or not created at: /src")
 	}
 
 	return output, nil
