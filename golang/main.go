@@ -79,6 +79,7 @@ func (g *Golang) Build(
 }
 
 // Build a Go project returning a Container containing the build
+
 func (g *Golang) Testdebug(
 	ctx context.Context,
 	source *Directory,
@@ -89,19 +90,28 @@ func (g *Golang) Testdebug(
 		g = g.WithProject(source)
 	}
 
-	workdir, _ := g.Ctr.WithExec([]string{"pwd"}).Stdout(ctx)
-	fmt.Printf("Current workdir: %s\n", workdir)
+	// Zet het pad voor het coverprofile naar /src/coverage.txt
+	coveragePath := "/src/coverage.txt"
 
-	command := append([]string{"go", "test", component, "-coverprofile=/go/coverage.txt", "-timeout", timeout, "-v"})
+	// Voer de tests uit en sla coverage op in /src/coverage.txt
+	command := append([]string{"go", "test", component, "-coverprofile=" + coveragePath, "-timeout", timeout, "-v"})
 	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
 		return "", fmt.Errorf("go test error: %v\nstdout: %s", err, output)
 	}
 
-	if _, err := g.Ctr.WithExec([]string{"ls", "-la", "/go/coverage.txt"}).Stdout(ctx); err != nil {
-		return "", fmt.Errorf("Coverage file not found or not created at: /src")
+	// Check of coverage.txt is aangemaakt in /src
+	if _, err := g.Ctr.WithExec([]string{"ls", "-la", coveragePath}).Stdout(ctx); err != nil {
+		return "", fmt.Errorf("Coverage file not found at: %s", coveragePath)
 	}
 
+	// Kopieer coverage.txt naar de host
+	hostPath := "./coverage.txt"
+	if err := g.Ctr.File(coveragePath).Export(ctx, hostPath); err != nil {
+		return "", fmt.Errorf("Failed to export coverage.txt to host: %v", err)
+	}
+
+	fmt.Printf("Coverage file successfully copied to host: %s\n", hostPath)
 	return output, nil
 }
 
