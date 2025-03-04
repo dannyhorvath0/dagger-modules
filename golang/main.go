@@ -96,7 +96,7 @@ func (g *Golang) Testdebug(
 	}
 
 	// Voer de tests uit met een relatief pad
-	command := append([]string{"go", "test", component, "-coverprofile=coverage.txt", "-timeout", timeout, "-v"})
+	command := append([]string{"go", "test", component, "-coverprofile=/src/overage.txt", "-timeout", timeout, "-v"})
 	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
 		return "", fmt.Errorf("go test error: %v\nstdout: %s", err, output)
