@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"runtime"
 )
 
@@ -79,61 +80,31 @@ func (g *Golang) Build(
 }
 
 // Build a Go project returning a Container containing the build
-func (g *Golang) BuildContainer(
-	ctx context.Context,
-	// The Go source code to build
-	// +optional
-	source *Directory,
-	// Arguments to `go build`
-	// +optional
-	args []string,
-	// The architecture for GOARCH
-	// +optional
-	arch string,
-	// The operating system for GOOS
-	// +optional
-	os string,
-	// Base container in which to copy the build
-	// +optional
-	base *Container,
-) *Container {
-	dir := g.Build(ctx, source, args, arch, os)
-	if base == nil {
-		base = dag.Container().From("ubuntu:latest")
-	}
-	return base.
-		WithDirectory("/usr/local/bin/", dir)
-}
-
-// Test the Go project
 func (g *Golang) Testdebug(
 	ctx context.Context,
-	// The Go source code to test
-	// +optional
 	source *Directory,
-	// Arguments to `go test`
-	// +optional
-	// +default "./..."
 	component string,
-	// Generate a coverprofile or not at a location
-	// +optional
-	// +default ./
 	coverageLocation string,
-	// Timeout for go
-	// +optional
-	// +default "180s"
 	timeout string,
 ) (string, error) {
 	if source != nil {
 		g = g.WithProject(source)
 	}
 
-	command := append([]string{"go", "test", component, "-coverprofile", "/dev/stdout", "-covermode", "set", "-json", "-timeout", timeout, "-v"})
+	// Zorg dat het bestand wordt aangemaakt in de container
+	command := append([]string{"go", "test", component, "-coverprofile", coverageLocation, "-timeout", timeout, "-v"})
 
+	// Voer de test uit en capture stdout
 	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
 		return "", fmt.Errorf("go test error: %v\nstdout: %s", err, output)
 	}
+
+	// Controleer of coverage.txt bestaat
+	if _, err := os.Stat(coverageLocation); os.IsNotExist(err) {
+		return "", fmt.Errorf("Coverage file not found: %v", coverageLocation)
+	}
+
 	return output, nil
 }
 
