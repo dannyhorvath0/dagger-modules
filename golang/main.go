@@ -128,7 +128,7 @@ func (g *Golang) Coveragedebug(
 		g = g.WithProject(source)
 	}
 
-	command := append([]string{"go", "test", component, "-coverprofile", "/dev/stdout", "-run", "^$", "-covermode", "set", "-timeout", timeout, "-v"})
+	command := append([]string{"go", "test", component, "-coverprofile", "/dev/stdout", "-run", "^$", "-covermode", "set", "-json", "-timeout", timeout, "-v"})
 
 	output, err := g.prepare(ctx).WithExec(command).Stdout(ctx)
 	if err != nil {
